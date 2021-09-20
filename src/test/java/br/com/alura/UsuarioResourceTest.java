@@ -22,6 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.hasItem;
+
 @QuarkusTest
 public class UsuarioResourceTest {
 
@@ -50,6 +53,19 @@ public class UsuarioResourceTest {
         assertEquals(novoUsuario.getUserName(), usuarioPersistido.getUserName());
        
         assertTrue(verifyBCryptPassword(usuarioPersistido.getPassword(), novoUsuario.getPassword()));
+
+        given()
+        .auth().basic(novoUsuario.getUserName(), novoUsuario.getPassword())
+        .when()
+        .get("/usuarios")
+        .then()
+        .statusCode(200)
+        .body("size()", is(1))
+          .body("nome", hasItem(novoUsuario.getNome()))
+          .body("cpf", hasItem(novoUsuario.getCpf()))
+          .body("userName", hasItem(novoUsuario.getUserName()))
+          .body("role", hasItem("admin"));
+
 
         usuarioRepository.deleteById(usuarioPersistido.getId());
     }

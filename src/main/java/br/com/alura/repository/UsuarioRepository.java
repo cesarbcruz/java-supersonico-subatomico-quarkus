@@ -11,7 +11,7 @@ public class UsuarioRepository implements PanacheRepository<Usuario>{
 
     public void adicionar(Usuario usuario){
         usuario.setPassword(BcryptUtil.bcryptHash(usuario.getPassword()));
-        usuario.setRole("alura".equals(usuario.getNome())?"admin":"user");
+        usuario.setRole("alura".equals(usuario.getUserName())?"admin":"user");
         persist(usuario);
     }
     
