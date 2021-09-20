@@ -1,10 +1,7 @@
 package br.com.alura.resource;
 
-import java.time.LocalDate;
-
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;

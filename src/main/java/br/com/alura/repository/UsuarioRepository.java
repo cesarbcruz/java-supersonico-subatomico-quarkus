@@ -1,8 +1,5 @@
 package br.com.alura.repository;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.enterprise.context.ApplicationScoped;
 
 import br.com.alura.model.Usuario;
