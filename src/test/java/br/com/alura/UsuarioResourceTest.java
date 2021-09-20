@@ -67,7 +67,7 @@ public class UsuarioResourceTest {
           .body("role", hasItem("admin"));
 
 
-        usuarioRepository.deleteById(usuarioPersistido.getId());
+        usuarioRepository.deleteAll();
     }
 
 

@@ -19,7 +19,11 @@ import br.com.alura.repository.OrdemRepository;
 import br.com.alura.repository.UsuarioRepository;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.time.LocalDate;
 
 @QuarkusTest
 public class OrdemResourceTest {
@@ -31,6 +35,8 @@ public class OrdemResourceTest {
     UsuarioRepository usuarioRepository;
 
     Usuario usuario;
+    Usuario usuarioAdmin;
+
     Ordem ordem;
     Jsonb jsonb = JsonbBuilder.create();
 
@@ -44,6 +50,14 @@ public class OrdemResourceTest {
         usuario.setCpf("12345678901");
         usuario.setRole("user");
         usuarioRepository.persist(usuario);
+
+        usuarioAdmin = new Usuario();
+        usuarioAdmin.setNome("Admin Teste");
+        usuarioAdmin.setUserName("alura");
+        usuarioAdmin.setPassword(BcryptUtil.bcryptHash("123456"));
+        usuarioAdmin.setCpf("12345678901");
+        usuarioAdmin.setRole("admin");
+        usuarioRepository.persist(usuarioAdmin);
     }
 
     @Test
@@ -63,21 +77,28 @@ public class OrdemResourceTest {
         .then()
         .statusCode(204);
 
-        ordem = ordemRepository.find("tipo", ordem.getTipo()).firstResult();
+        Ordem [] ordens = given()
+            .auth().basic(usuarioAdmin.getUserName(), "123456")
+            .when()
+            .get("/ordens")
+            .then()
+            .statusCode(200)
+            .body("size()", is(1))
+            .extract().response().as(Ordem[].class);
 
-        assertNotNull(ordem.getId());
-        assertNotNull(ordem.getPreco());
-        assertNotNull(ordem.getData());
-        assertNotNull(ordem.getStatus());
+        assertNotNull(ordens[0].getId());
+        assertEquals(ordens[0].getPreco(), ordem.getPreco());
+        assertEquals(ordens[0].getData(), LocalDate.now());
+        assertNotNull(ordens[0].getStatus(), "ENVIADA");
+        
 
     }
 
     @AfterEach
     @Transactional
     public void clear(){
-        ordemRepository.deleteById(ordem.getId());
-        usuarioRepository.deleteById(usuario.getId());
-
+        ordemRepository.deleteAll();
+        usuarioRepository.deleteAll();
     }
 
 }
