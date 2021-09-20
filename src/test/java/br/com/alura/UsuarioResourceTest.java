@@ -8,6 +8,11 @@ import javax.json.bind.JsonbBuilder;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.MediaType;
 import org.junit.jupiter.api.Test;
+import org.wildfly.security.password.Password;
+import org.wildfly.security.password.PasswordFactory;
+import org.wildfly.security.password.WildFlyElytronPasswordProvider;
+import org.wildfly.security.password.interfaces.BCryptPassword;
+import org.wildfly.security.password.util.ModularCrypt;
 
 import br.com.alura.model.Usuario;
 import br.com.alura.repository.UsuarioRepository;
@@ -15,6 +20,7 @@ import br.com.alura.repository.UsuarioRepository;
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 public class UsuarioResourceTest {
@@ -24,11 +30,11 @@ public class UsuarioResourceTest {
     
     @Test
     @Transactional
-    public void testUsuariosEndpoint() {
+    public void testUsuariosEndpoint() throws Exception {
         Jsonb jsonb = JsonbBuilder.create();
         Usuario novoUsuario = new Usuario();
-        novoUsuario.setNome("User Teste");
-        novoUsuario.setUserName("teste");
+        novoUsuario.setNome("User Teste Amind");
+        novoUsuario.setUserName("alura");
         novoUsuario.setPassword("123456");
         novoUsuario.setCpf("12345678901");
         given()
@@ -42,9 +48,29 @@ public class UsuarioResourceTest {
         Usuario usuarioPersistido = usuarioRepository.find("nome", novoUsuario.getNome()).firstResult();
         assertNotNull(novoUsuario.getCpf(), usuarioPersistido.getCpf());
         assertEquals(novoUsuario.getUserName(), usuarioPersistido.getUserName());
-        assertEquals(novoUsuario.getPassword(), usuarioPersistido.getPassword());
+       
+        assertTrue(verifyBCryptPassword(usuarioPersistido.getPassword(), novoUsuario.getPassword()));
 
         usuarioRepository.deleteById(usuarioPersistido.getId());
+    }
+
+
+    public static boolean verifyBCryptPassword(String bCryptPasswordHash, String passwordToVerify) throws Exception {
+
+        WildFlyElytronPasswordProvider provider = new WildFlyElytronPasswordProvider();
+
+        // 1. Create a BCrypt Password Factory
+        PasswordFactory passwordFactory = PasswordFactory.getInstance(BCryptPassword.ALGORITHM_BCRYPT, provider);
+
+        // 2. Decode the hashed user password
+        Password userPasswordDecoded = ModularCrypt.decode(bCryptPasswordHash);
+
+        // 3. Translate the decoded user password object to one which is consumable by this factory.
+        Password userPasswordRestored = passwordFactory.translate(userPasswordDecoded);
+
+        // Verify existing user password you want to verify
+        return passwordFactory.verify(userPasswordRestored, passwordToVerify.toCharArray());
+
     }
 
 }

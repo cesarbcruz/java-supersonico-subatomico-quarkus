@@ -2,6 +2,7 @@ package br.com.alura.resource;
 
 import java.time.LocalDate;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
@@ -19,6 +20,7 @@ public class OrdemResource {
     OrdemRepository ordemRepository;
 
     @POST
+    @RolesAllowed("user")
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
     public void inserir(Ordem ordem){

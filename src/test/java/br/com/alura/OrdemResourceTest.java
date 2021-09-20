@@ -1,5 +1,6 @@
 package br.com.alura;
 
+import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.test.junit.QuarkusTest;
 
 import javax.inject.Inject;
@@ -18,7 +19,6 @@ import br.com.alura.repository.OrdemRepository;
 import br.com.alura.repository.UsuarioRepository;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
@@ -40,8 +40,9 @@ public class OrdemResourceTest {
         usuario = new Usuario();
         usuario.setNome("User Teste");
         usuario.setUserName("teste");
-        usuario.setPassword("123456");
+        usuario.setPassword(BcryptUtil.bcryptHash("123456"));
         usuario.setCpf("12345678901");
+        usuario.setRole("user");
         usuarioRepository.persist(usuario);
     }
 
@@ -55,6 +56,7 @@ public class OrdemResourceTest {
 
         given()
         .body(jsonb.toJson(ordem))
+        .auth().basic(usuario.getUserName(), "123456")
         .header("Content-Type", MediaType.APPLICATION_JSON)
         .when()
         .post("/ordens")

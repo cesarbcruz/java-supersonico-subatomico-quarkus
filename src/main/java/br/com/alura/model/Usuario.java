@@ -5,7 +5,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import io.quarkus.security.jpa.Password;
+import io.quarkus.security.jpa.Roles;
+import io.quarkus.security.jpa.UserDefinition;
+import io.quarkus.security.jpa.Username;
+
 @Entity
+@UserDefinition
 public class Usuario {
 
     @Id
@@ -16,9 +22,14 @@ public class Usuario {
 
     private String cpf;
 
+    @Username
     private String userName;
 
+    @Password
     private String password;
+
+    @Roles
+    private String role;
 
     public String getNome() {
         return nome;
@@ -54,6 +65,14 @@ public class Usuario {
 
     public Long getId() {
         return id;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getRole() {
+        return role;
     }
 
 }

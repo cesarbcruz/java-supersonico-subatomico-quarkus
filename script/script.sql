@@ -7,7 +7,10 @@ CREATE TABLE `Usuario` (
 	`cpf` VARCHAR(14) NOT NULL,
 	`username` VARCHAR(50) NOT NULL,
 	`password` VARCHAR(100) NOT NULL,
+	`role` VARCHAR(50) NOT NULL,
 	PRIMARY KEY(`id`)) ENGINE=InnoDB;
+
+ALTER TABLE `Usuario` ADD UNIQUE `username` (`username`);
 	
 CREATE TABLE `Ordem` (
 	`id` int NOT NULL AUTO_INCREMENT,
