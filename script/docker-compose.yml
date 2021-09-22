@@ -11,9 +11,34 @@ services:
       MYSQL_ROOT_PASSWORD: example
     ports:
         - 3306:3306
+    networks:
+      - bitcoin-poc
+    volumes:
+        - "./script.sql:/docker-entrypoint-initdb.d/1.sql"
 
   adminer:
     image: adminer
     restart: always
     ports:
       - 8787:8080
+    networks:
+      - bitcoin-poc
+
+  bitcoin:
+    image: quarkus/bitcoin-jvm:latest
+    build:
+      context: ../
+      dockerfile: src/main/docker/Dockerfile.${QUARKUS_MODE:-jvm}
+    environment:
+      QUARKUS_DATASOURCE_URL: jdbc:mysql://db:3306/bitcoin?autoReconnect=true
+    restart: always
+    ports:
+      - 8888:8080
+    networks:
+      - bitcoin-poc
+    depends_on:
+      - db
+  
+networks:
+  bitcoin-poc:
+    driver: bridge
